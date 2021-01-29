@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status, permissions
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from core.models import ProductsTbl, PurchaseTransactionTbl
@@ -131,6 +131,23 @@ class PurchaseViewSet(viewsets.ModelViewSet):
     permission_classes = []
     queryset = PurchaseTransactionTbl.objects.all().order_by('-created_at')
     serializer_class = serializers.PurchaseSerializer
+
+    def update(self, request, pk=None):
+        obj = get_object_or_404(self.queryset, pk=pk)
+        serializer = serializers.UpdatePurchaseSerializer(
+        obj, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+    def perform_destroy(self, instance):
+        qty = instance.purchased_quantity
+        qs = instance.product
+        qs.quantity += qty
+        qs.save()
+        instance.delete()
 
 
 class CreateProductsCsvViewSet(viewsets.ViewSet):
