@@ -1,0 +1,10 @@
+Product Name, Purchased Qty, Product Price, Purchase Id, Product Id
+
+By default, the available stock of each product is 25000
+
+subtract the Purchased Qty from the available stock
+
+There should be an API for the client to insert the refill count of products
+in the godown
+
+They should be able to add new products (Fields: Product Name, Product Price, Quantity)
