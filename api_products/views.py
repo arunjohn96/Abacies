@@ -135,7 +135,7 @@ class PurchaseViewSet(viewsets.ModelViewSet):
     def update(self, request, pk=None):
         obj = get_object_or_404(self.queryset, pk=pk)
         serializer = serializers.UpdatePurchaseSerializer(
-        obj, data=request.data)
+            obj, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -165,10 +165,7 @@ class CreateProductsCsvViewSet(viewsets.ViewSet):
             # print(data[:5])
         else:
             return Response(
-                {
-                    'message': "CSV data not found"},
-                status.HTTP_404_NOT_FOUND
-            )
+                {'message': "CSV data not found"}, status.HTTP_404_NOT_FOUND)
         create_new_products(data)
         return Response({'message': 'Action Complete'}, status.HTTP_201_CREATED)
 
@@ -208,18 +205,25 @@ class RefillProductCountViewSet(viewsets.ViewSet):
 
     def create(self, request):
         product_id = request.data.get('product_id', None)
+        refill_count = request.data.get('refill_count', None)
+        if product_id is None or refill_count is None:
+            return Response({'message': 'Check params'}, status.HTTP_400_BAD_REQUEST)
 
-        obj = self.queryset.filter(product_id=int(product_id)).first()
+        try:
+            obj = self.queryset.get(product_id=int(product_id))
+        except ObjectDoesNotExist:
+            return Response({'message': 'Not found '}, status.HTTP_404_NOT_FOUND)
 
-        serializer = self.serializer_class(obj, data=request.data)
+        serializer = self.serializer_class(
+            obj, data={'product_id': product_id, 'refill_count': refill_count})
         if serializer.is_valid():
             serializer.save()
             return Response({
-            'message':'Refilled successfully',
-            'data': serializer.data
+                'message': 'Refilled successfully',
+                'data': serializer.data
             }, status.HTTP_200_OK)
 
         return Response({
-        'message':'Refill Failed',
-        'data': serializer.errors
+            'message': 'Refill Failed',
+            'data': serializer.errors
         }, status.HTTP_400_BAD_REQUEST)

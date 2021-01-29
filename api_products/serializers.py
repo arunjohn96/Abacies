@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from core import models
 
+
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProductsTbl
@@ -9,10 +10,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class PurchaseSerializer(serializers.ModelSerializer):
     product_id = serializers.IntegerField(source='product.product_id')
+
     class Meta:
         model = models.PurchaseTransactionTbl
         fields = ['id', 'product_id', 'purchase_id', 'purchased_quantity',
-        'created_at', 'last_modified']
+                  'created_at', 'last_modified']
 
     def create(self, validated_data):
         try:
@@ -28,18 +30,21 @@ class PurchaseSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Creation Error")
 
         return models.PurchaseTransactionTbl.objects.create(
-        product=qs,**validated_data
+            product=qs, **validated_data
         )
 
+
 class UpdatePurchaseSerializer(serializers.ModelSerializer):
-    product_id = serializers.IntegerField(source='product.product_id', read_only=True)
+    product_id = serializers.IntegerField(
+        source='product.product_id', read_only=True)
+
     class Meta:
         model = models.PurchaseTransactionTbl
         fields = ['id', 'product_id', 'purchase_id', 'purchased_quantity',
-        'created_at', 'last_modified']
+                  'created_at', 'last_modified']
 
         read_only_fields = ['id', 'product_id', 'purchase_id', 'created_at',
-         'last_modified']
+                            'last_modified']
 
     def update(self, instance, validated_data):
         qs = instance.product
@@ -47,10 +52,9 @@ class UpdatePurchaseSerializer(serializers.ModelSerializer):
         new_purchased_qty = validated_data.get('purchased_quantity')
         product_qty = qs.quantity
 
-        qty = product_qty - (new_purchased_qty-old_purchased_qty)
+        qty = product_qty - (new_purchased_qty - old_purchased_qty)
         qs.quantity = qty
         qs.save()
-
 
         instance.purchased_quantity = new_purchased_qty
         instance.save()
@@ -70,7 +74,7 @@ class RefillSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         count = validated_data.get('quantity', None)
         if count is not None:
-            instance.quantity = instance.quantity+count
+            instance.quantity = instance.quantity + count
             instance.save()
 
         return instance

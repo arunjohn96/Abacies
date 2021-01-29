@@ -113,3 +113,38 @@ class TestPurchaseViews(APITestCase):
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(new_qty, (qty + purchase_quantity))
+
+
+class TestRefillView(APITestCase):
+    def setUp(self):
+        self.product = ProductsTbl.objects.create(
+        product_id=10001,
+        name='Some Product',
+        quantity=100,
+        unit_price=2500
+        )
+        self.url = reverse('refill-list')
+
+    def test_cannot_refill(self):
+        res = self.client.post(self.url)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cannot_refill_wrong_data(self):
+        data = {
+        'product_id':1000,
+        'refill_count':100,
+        }
+        res = self.client.post(self.url, data)
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_refill(self):
+        data ={
+        'product_id':self.product.product_id,
+        'refill_count':1000
+        }
+        quantity = self.product.quantity
+        new_qty = quantity+data['refill_count']
+        res = self.client.post(self.url,data)
+        check_qty = ProductsTbl.objects.get(id=self.product.pk).quantity
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(check_qty,new_qty)
