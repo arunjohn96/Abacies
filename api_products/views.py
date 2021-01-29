@@ -20,7 +20,6 @@ def find_csv_file(path_to_dir, suffix=".csv"):
         csv_files.sort(
             key=lambda x: os.path.getmtime(
                 os.path.join(settings.CSV_FILE_PATH, x)), reverse=True)
-        print(csv_files)
         return csv_files[0]
     else:
         return None
@@ -54,14 +53,12 @@ def create_new_products(data):
             except (ValueError):
                 pass
     if result:
-        print(result)
         ProductsTbl.objects.bulk_create(result)
 
     return
 
 
 def record_purchase_transactions(data):
-    # print("Inside Purchase Record Transaction :::::::::")
     queryset = PurchaseTransactionTbl.objects.all().values_list('purchase_id', flat=True)
     product_qs = ProductsTbl.objects.all()
     result = []
@@ -102,7 +99,6 @@ def record_purchase_transactions(data):
         updated_purchases_list.append(product)
 
     if updated_purchases_list:
-        print(updated_purchases_list[0])
         ProductsTbl.objects.bulk_update(updated_purchases_list, ['quantity'])
 
     return
